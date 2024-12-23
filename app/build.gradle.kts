@@ -40,7 +40,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,4 +55,17 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // --- Retrofit & Gson ---
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)  // if you want auto-conversion to/from JSON
+
+    // --- Coroutines ---
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
+    // --- Room ---
+    implementation(libs.room.runtime)
+    // (Optional) If you want to manually parse JSON with Gson (outside Retrofit)
+    implementation(libs.gson)
 }
