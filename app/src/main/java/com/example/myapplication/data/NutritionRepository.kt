@@ -11,8 +11,8 @@ class NutritionRepository(
     private val api: NutritionixApi = RetrofitClient.api
 
     // Provide your appId and apiKey via constructor or as constants
-    private val appId = "YOUR_APP_ID"
-    private val apiKey = "YOUR_API_KEY"
+    private val appId = "134ff997"
+    private val apiKey = "bf15a02919c6888eab5ca2449875d621\t"
 
     suspend fun searchFoodItem(query: String) = api.searchFoods(
         query = query,
