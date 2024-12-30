@@ -1,11 +1,13 @@
 package com.example.myapplication
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.LiveData
@@ -87,36 +89,34 @@ class MainActivity : ComponentActivity() {
 
                         // Destination 2: "search"
                         composable("search") {
-                            // Instantiate SearchViewModel without a factory
-                            val searchViewModel: SearchViewModel = viewModel(
-                                // No factory since we are not using ViewModelFactory
-                            )
+                            val searchViewModel = remember { SearchViewModel(repository) }
 
-                            // Show the SearchScreen
                             SearchScreen(
                                 onBackClick = { navController.popBackStack() },
                                 viewModel = searchViewModel,
                                 onFoodSelected = { foodName ->
-                                    // Navigate to detail route, e.g., "foodDetail/apple"
                                     navController.navigate("foodDetail/$foodName")
                                 }
                             )
                         }
+
 
                         // Destination 3: "foodDetail/{foodName}"
                         composable(
                             route = "foodDetail/{foodName}",
                             arguments = listOf(navArgument("foodName") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            // Extract the argument
-                            val foodName = backStackEntry.arguments?.getString("foodName") ?: ""
+                            val encodedFoodName = backStackEntry.arguments?.getString("foodName") ?: ""
+                            val foodName = Uri.decode(encodedFoodName)
 
-                            // Instantiate FoodDetailViewModel without a factory
-                            val detailViewModel: FoodDetailViewModel = viewModel(
-                                // No factory since we are not using ViewModelFactory
-                            )
+                            // Instantiate FoodDetailViewModel using remember
+                            val detailViewModel: FoodDetailViewModel = remember { FoodDetailViewModel(repository) }
 
-                            // Show the FoodDetailScreen
+                            // Fetch food details when the composable is launched
+                            LaunchedEffect(key1 = foodName) {
+                                detailViewModel.fetchFoodDetails(foodName)
+                            }
+
                             FoodDetailScreen(
                                 foodName = foodName,
                                 viewModel = detailViewModel,
