@@ -17,52 +17,63 @@ import com.example.myapplication.ui.SearchViewModel
 @Composable
 fun SearchScreen(
     onBackClick: () -> Unit,
+    onFoodSelected: (String) -> Unit, // callback to navigate to detail
     viewModel: SearchViewModel
 ) {
     var query by remember { mutableStateOf("") }
-
-    val detailedFoods by viewModel.detailedFoods.collectAsState()
+    val results by viewModel.searchResults.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     Column(modifier = Modifier.padding(16.dp)) {
         Button(onClick = onBackClick) {
             Text("Back")
         }
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Let user type the free-form query (e.g. "1 egg")
+        // TextField for the user to type the search query
         TextField(
             value = query,
             onValueChange = { query = it },
-            label = { Text("Query (e.g. '1 egg')") },
+            label = { Text("Search Foods") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Button(
             onClick = {
                 if (query.isNotBlank()) {
-                    // Instead of calling the instant search, call getDetailedFood(query)
-                    viewModel.getDetailedFood(query)
+                    viewModel.searchFoods(query)
                 }
             },
             modifier = Modifier.padding(top = 8.dp)
         ) {
-            Text("Search Detailed")
+            Text("Search")
         }
 
+        // Show error if any
         if (errorMessage.isNotEmpty()) {
             Text(text = "Error: $errorMessage", color = Color.Red)
         }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Show each returned item’s name + nf_calories
+        // Display results
         LazyColumn {
-            items(detailedFoods) { food ->
-                Text(
-                    text = "${food.food_name ?: "Unknown"} - ${food.nf_calories ?: 0} kcal",
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+            items(results) { item ->
+                // We show partial calorie info from the instant endpoint
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            // Navigate to detail route with item.food_name
+                            onFoodSelected(item.food_name)
+                        }
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text("${item.food_name}")
+                }
             }
         }
     }
 }
+

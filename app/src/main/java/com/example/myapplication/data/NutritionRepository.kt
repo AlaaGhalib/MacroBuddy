@@ -1,11 +1,11 @@
 package com.example.myapplication.data
 
-import com.example.myapplication.data.local.ConsumedFood
 import com.example.myapplication.network.NaturalNutrientsRequest
 import com.example.myapplication.network.NaturalNutrientsResponse
 import com.example.myapplication.network.NutritionixApi
 import com.example.myapplication.network.RetrofitClient
-import com.example.myfitnessapp.data.local.ConsumedFoodDao
+import com.example.myapplication.data.local.ConsumedFood
+import com.example.myapplication.data.local.ConsumedFoodDao
 
 class NutritionRepository(                                                  
     private val consumedFoodDao: ConsumedFoodDao // from Room

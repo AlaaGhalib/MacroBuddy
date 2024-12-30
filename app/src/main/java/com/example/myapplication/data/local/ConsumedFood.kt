@@ -5,8 +5,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "consumed_foods")
 data class ConsumedFood(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val foodName: String,
-    val calories: Double,
-    val timestamp: Long // store as epoch time (System.currentTimeMillis())
+    val calories: Number,
+    val timestamp: Long
 )

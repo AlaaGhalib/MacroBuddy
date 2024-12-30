@@ -12,19 +12,19 @@ import kotlinx.coroutines.launch
 class SearchViewModel(
     private val repository: NutritionRepository
 ) : ViewModel() {
-    // previously: a flow for instant search results, e.g. `searchFoods(query)`
 
-    private val _detailedFoods = MutableStateFlow<List<FoodDetails>>(emptyList())
-    val detailedFoods = _detailedFoods.asStateFlow()
+    private val _searchResults = MutableStateFlow<List<FoodItem>>(emptyList())
+    val searchResults = _searchResults.asStateFlow()
 
     private val _errorMessage = MutableStateFlow("")
     val errorMessage = _errorMessage.asStateFlow()
 
-    fun getDetailedFood(query: String) {
+    fun searchFoods(query: String) {
         viewModelScope.launch {
             try {
-                val response = repository.getNutrientsForFood(query)
-                _detailedFoods.value = response.foods.orEmpty()
+                val response = repository.searchFoodItem(query)
+                // Combine common + branded
+                _searchResults.value = (response.common.orEmpty() + response.branded.orEmpty())
                 _errorMessage.value = ""
             } catch (e: Exception) {
                 _errorMessage.value = e.localizedMessage ?: "An error occurred"
@@ -32,5 +32,6 @@ class SearchViewModel(
         }
     }
 }
+
 
 

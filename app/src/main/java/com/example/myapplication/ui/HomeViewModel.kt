@@ -13,7 +13,7 @@ class HomeViewModel(private val repository: NutritionRepository) : ViewModel() {
 
     // Expose LiveData for UI
     val todaysFoods: LiveData<List<ConsumedFood>>
-    val todaysCalorieSum: LiveData<Double>
+    val todaysCalorieSum: LiveData<Float?>
 
     init {
         val (startOfDay, endOfDay) = getTodayStartEndTimestamps()
@@ -21,8 +21,8 @@ class HomeViewModel(private val repository: NutritionRepository) : ViewModel() {
         todaysCalorieSum = repository.getDailyCaloriesSum(startOfDay, endOfDay)
     }
 
-    fun getRemainingCalories(caloriesConsumed: Double?): Double {
-        val consumed = caloriesConsumed ?: 0.0
+    fun getRemainingCalories(caloriesConsumed: Float?): Float {
+        val consumed = caloriesConsumed ?: 0f
         return dailyGoal - consumed
     }
 
@@ -35,7 +35,7 @@ class HomeViewModel(private val repository: NutritionRepository) : ViewModel() {
                 // Suppose we have nf_calories
                 val newFood = ConsumedFood(
                     foodName = firstFood.food_name,
-                    calories = firstFood.nf_calories ?: 0.0,
+                    calories = firstFood.nf_calories ?: 0f,
                     timestamp = System.currentTimeMillis()
                 )
                 repository.insertConsumedFood(newFood)

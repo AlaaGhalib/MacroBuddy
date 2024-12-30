@@ -14,7 +14,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(
-    onNavigateToSearch: () -> Unit
+    onNavigateToSearch: () -> Unit,
+    onNavigateToProfile: () -> Unit // New parameter
 ) {
     // Hardcoded calorie numbers for demonstration
     val consumed = 1200f
@@ -35,10 +36,14 @@ fun HomeScreen(
         Button(onClick = onNavigateToSearch) {
             Text("Go to Search")
         }
+
+        // 3) Button to navigate to Profile
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = onNavigateToProfile) {
+            Text("Profile")
+        }
     }
 }
-
-
 
 
 @Composable
@@ -67,4 +72,5 @@ fun CalorieCircularIndicator(
         Text(text = "Remaining: ${(total - consumed).coerceAtLeast(0f).toInt()} calories")
     }
 }
+
 

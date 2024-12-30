@@ -10,35 +10,64 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.myapplication.data.NutritionRepository
-import com.example.myapplication.data.local.ConsumedFood
-import com.example.myapplication.ui.NaturalViewModel
+import com.example.myapplication.ui.FoodDetailViewModel
+import com.example.myapplication.ui.ProfileViewModel
 import com.example.myapplication.ui.SearchViewModel
+import com.example.myapplication.ui.screens.FoodDetailScreen
 import com.example.myapplication.ui.screens.HomeScreen
-import com.example.myapplication.ui.screens.NaturalNutrientsScreen
+import com.example.myapplication.ui.screens.ProfileScreen
 import com.example.myapplication.ui.screens.SearchScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.myfitnessapp.data.local.ConsumedFoodDao
+import com.example.myapplication.data.local.ConsumedFood
+import com.example.myapplication.data.local.ConsumedFoodDao
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                // 1) Provide a top-level Scaffold
+                // Provide a top-level Scaffold
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                     // If you want a top bar or bottom bar,
                     // you can add it here as well.
                 ) { innerPadding ->
 
-                    // 2) Create a NavController to manage navigation
+                    // Create a NavController to manage navigation
                     val navController = rememberNavController()
 
-                    // 3) Wrap the NavHost in Modifier.padding(innerPadding)
+                    // Initialize NutritionRepository with a stub DAO
+                    val repository = remember {
+                        object : ConsumedFoodDao {
+                            override suspend fun insert(food: ConsumedFood) {
+                                // do nothing
+                            }
+
+                            override suspend fun delete(food: ConsumedFood) {
+                                // do nothing
+                            }
+
+                            override fun getFoodsForDay(startOfDay: Long, endOfDay: Long): LiveData<List<ConsumedFood>> {
+                                // return empty or placeholder data
+                                return MutableLiveData(emptyList())
+                            }
+
+                            override fun getDailyCalorieSum(startOfDay: Long, endOfDay: Long): LiveData<Float?> {
+                                return MutableLiveData(0f)
+                            }
+                        }.let { dao ->
+                            NutritionRepository(dao)
+                        }
+                    }
+
+                    // Set up NavHost with navigation routes
                     NavHost(
                         navController = navController,
                         startDestination = "home",
@@ -49,70 +78,63 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 onNavigateToSearch = {
                                     navController.navigate("search")
+                                },
+                                onNavigateToProfile = { // New callback
+                                    navController.navigate("profile")
                                 }
                             )
                         }
 
                         // Destination 2: "search"
                         composable("search") {
-                            // 1) Create a stub (fake) DAO that does nothing:
-                            val stubDao = object : ConsumedFoodDao {
-                                override suspend fun insert(food: ConsumedFood) {
-                                    // do nothing
-                                }
-                                override fun getFoodsForDay(startOfDay: Long, endOfDay: Long): LiveData<List<ConsumedFood>> {
-                                    // return empty or placeholder data
-                                    return MutableLiveData(emptyList())
-                                }
-                                override fun getDailyCalorieSum(startOfDay: Long, endOfDay: Long): LiveData<Double> {
-                                    return MutableLiveData(0.0)
-                                }
-                            }
+                            // Instantiate SearchViewModel without a factory
+                            val searchViewModel: SearchViewModel = viewModel(
+                                // No factory since we are not using ViewModelFactory
+                            )
 
-                            // 2) Pass this stubDao to NutritionRepository
-                            val repository = remember {
-                                NutritionRepository(stubDao)
-                            }
-
-                            // 3) Create the SearchViewModel
-                            val searchViewModel = remember {
-                                SearchViewModel(repository)
-                            }
-
-                            // 4) Show the screen
+                            // Show the SearchScreen
                             SearchScreen(
                                 onBackClick = { navController.popBackStack() },
-                                viewModel = searchViewModel
+                                viewModel = searchViewModel,
+                                onFoodSelected = { foodName ->
+                                    // Navigate to detail route, e.g., "foodDetail/apple"
+                                    navController.navigate("foodDetail/$foodName")
+                                }
                             )
                         }
-                        composable("natural") {
-                            // Suppose we have a stub or real DAO; pass it to your repository
-                            val stubDao = object : ConsumedFoodDao {
-                                override suspend fun insert(food: ConsumedFood) {
-                                    // do nothing
-                                }
-                                override fun getFoodsForDay(startOfDay: Long, endOfDay: Long): LiveData<List<ConsumedFood>> {
-                                    // return empty or placeholder data
-                                    return MutableLiveData(emptyList())
-                                }
-                                override fun getDailyCalorieSum(startOfDay: Long, endOfDay: Long): LiveData<Double> {
-                                    return MutableLiveData(0.0)
-                                }
-                            }
-                            val repository = remember {
-                                NutritionRepository(stubDao)
-                            }
-                            val viewModel = remember {
-                                NaturalViewModel(repository)
-                            }
 
-                            NaturalNutrientsScreen(
-                                viewModel = viewModel,
+                        // Destination 3: "foodDetail/{foodName}"
+                        composable(
+                            route = "foodDetail/{foodName}",
+                            arguments = listOf(navArgument("foodName") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            // Extract the argument
+                            val foodName = backStackEntry.arguments?.getString("foodName") ?: ""
+
+                            // Instantiate FoodDetailViewModel without a factory
+                            val detailViewModel: FoodDetailViewModel = viewModel(
+                                // No factory since we are not using ViewModelFactory
+                            )
+
+                            // Show the FoodDetailScreen
+                            FoodDetailScreen(
+                                foodName = foodName,
+                                viewModel = detailViewModel,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
 
+                        // Destination 4: "profile"
+                        composable("profile") {
+                            // Instantiate ProfileViewModel
+                            val profileViewModel: ProfileViewModel = viewModel()
 
+                            // Show the ProfileScreen
+                            ProfileScreen(
+                                viewModel = profileViewModel,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
                     }
                 }
             }

@@ -1,20 +1,21 @@
-package com.example.myfitnessapp.data.local
+package com.example.myapplication.data.local
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.example.myapplication.data.local.ConsumedFood
 
 @Dao
 interface ConsumedFoodDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(consumedFood: ConsumedFood)
+    suspend fun insert(food: ConsumedFood)
 
-    @Query("SELECT * FROM consumed_foods WHERE timestamp BETWEEN :start AND :end")
-    fun getFoodsForDay(start: Long, end: Long): LiveData<List<ConsumedFood>>
+    @Delete
+    suspend fun delete(food: ConsumedFood)
 
-    @Query("SELECT SUM(calories) FROM consumed_foods WHERE timestamp BETWEEN :start AND :end")
-    fun getDailyCalorieSum(start: Long, end: Long): LiveData<Double>
+    @Query("SELECT * FROM consumed_foods WHERE timestamp BETWEEN :startOfDay AND :endOfDay")
+    fun getFoodsForDay(startOfDay: Long, endOfDay: Long): LiveData<List<ConsumedFood>>
+
+    @Query("SELECT SUM(calories) FROM consumed_foods WHERE timestamp BETWEEN :startOfDay AND :endOfDay")
+    fun getDailyCalorieSum(startOfDay: Long, endOfDay: Long): LiveData<Float?>
 }
