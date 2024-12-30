@@ -5,5 +5,7 @@ data class NaturalNutrientsResponse(
 )
 
 data class FoodDetails(
-    val nf_calories: Double? // Only parse calories
+    val food_name: String?,
+    val nf_calories: Double? // Detailed calorie info
+    // Add more fields if needed (serving_qty, nf_protein, etc.)
 )

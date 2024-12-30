@@ -1,11 +1,13 @@
 package com.example.myapplication.data
 
 import com.example.myapplication.data.local.ConsumedFood
+import com.example.myapplication.network.NaturalNutrientsRequest
+import com.example.myapplication.network.NaturalNutrientsResponse
 import com.example.myapplication.network.NutritionixApi
 import com.example.myapplication.network.RetrofitClient
 import com.example.myfitnessapp.data.local.ConsumedFoodDao
 
-class NutritionRepository(
+class NutritionRepository(                                                  
     private val consumedFoodDao: ConsumedFoodDao // from Room
 ) {
     private val api: NutritionixApi = RetrofitClient.api
@@ -23,6 +25,15 @@ class NutritionRepository(
     // Room operations
     suspend fun insertConsumedFood(food: ConsumedFood) {
         consumedFoodDao.insert(food)
+    }
+
+    suspend fun getNutrientsForFood(foodName: String): NaturalNutrientsResponse {
+        val request = NaturalNutrientsRequest(query = foodName)
+        return api.getNutrients(
+            appId = appId,
+            apiKey = apiKey,
+            request = request
+        )
     }
 
     fun getConsumedFoodsForDay(startOfDay: Long, endOfDay: Long) =

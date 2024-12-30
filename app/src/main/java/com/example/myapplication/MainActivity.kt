@@ -15,8 +15,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.data.NutritionRepository
 import com.example.myapplication.data.local.ConsumedFood
+import com.example.myapplication.ui.NaturalViewModel
 import com.example.myapplication.ui.SearchViewModel
 import com.example.myapplication.ui.screens.HomeScreen
+import com.example.myapplication.ui.screens.NaturalNutrientsScreen
 import com.example.myapplication.ui.screens.SearchScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myfitnessapp.data.local.ConsumedFoodDao
@@ -83,6 +85,33 @@ class MainActivity : ComponentActivity() {
                                 viewModel = searchViewModel
                             )
                         }
+                        composable("natural") {
+                            // Suppose we have a stub or real DAO; pass it to your repository
+                            val stubDao = object : ConsumedFoodDao {
+                                override suspend fun insert(food: ConsumedFood) {
+                                    // do nothing
+                                }
+                                override fun getFoodsForDay(startOfDay: Long, endOfDay: Long): LiveData<List<ConsumedFood>> {
+                                    // return empty or placeholder data
+                                    return MutableLiveData(emptyList())
+                                }
+                                override fun getDailyCalorieSum(startOfDay: Long, endOfDay: Long): LiveData<Double> {
+                                    return MutableLiveData(0.0)
+                                }
+                            }
+                            val repository = remember {
+                                NutritionRepository(stubDao)
+                            }
+                            val viewModel = remember {
+                                NaturalViewModel(repository)
+                            }
+
+                            NaturalNutrientsScreen(
+                                viewModel = viewModel,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+
 
                     }
                 }
