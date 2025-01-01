@@ -62,7 +62,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Save Button
-            Button(
+            /*Button(
                 onClick = {
                     val goal = goalInput.toFloatOrNull()
                     if (goal != null && goal > 0) {
@@ -80,7 +80,7 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Save Goal")
-            }
+            }*/
 
             Spacer(modifier = Modifier.height(24.dp))
 

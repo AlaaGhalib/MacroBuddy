@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 data class ConsumedFood(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val foodName: String,
-    val calories: Number,
+    val calories: Float,
     val timestamp: Long
 )

@@ -1,18 +1,21 @@
+// FoodDetailViewModel.kt
 package com.example.myapplication.ui
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.MyApplication
 import com.example.myapplication.data.NutritionRepository
+import com.example.myapplication.data.local.ConsumedFood
 import com.example.myapplication.network.FoodDetails
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class FoodDetailViewModel(
-    private val repository: NutritionRepository
-) : ViewModel() {
+class FoodDetailViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: NutritionRepository = (application as MyApplication).repository
 
-    // Holds the “official” FoodDetails object(s) from the natural endpoint
+    // Holds the detailed FoodDetails from the API
     private val _foodDetails = MutableStateFlow<List<FoodDetails>>(emptyList())
     val foodDetails = _foodDetails.asStateFlow()
 
@@ -21,9 +24,7 @@ class FoodDetailViewModel(
     val errorMessage = _errorMessage.asStateFlow()
 
     /**
-     * fetchFoodDetails(foodName):
-     * Calls your repository to retrieve the detailed data for a single item,
-     * populates [_foodDetails] for UI to observe.
+     * Fetch food details based on the food name.
      */
     fun fetchFoodDetails(foodName: String) {
         viewModelScope.launch {
@@ -38,41 +39,27 @@ class FoodDetailViewModel(
     }
 
     /**
-     * computeCaloriesForGramInput(
-     *   details: FoodDetails,
-     *   userGrams: Double
-     * ): Double
-     *
-     * Utility function that uses ratio-based calculation
-     *   e.g.: if details.nf_calories is for “serving_weight_grams” grams,
-     *         then for userGrams we do: ratio = baseCals * (userGrams / baseGrams).
+     * Compute calories based on user input grams.
      */
     fun computeCaloriesForGramInput(details: FoodDetails, userGrams: Double): Double {
         val baseCals = details.nf_calories ?: 0.0
         val baseGrams = details.serving_weight_grams ?: 0.0
         return if (baseGrams > 0.0 && userGrams > 0.0) {
             baseCals * (userGrams / baseGrams)
-        } else 0.0
+        } else {
+            0.0
+        }
     }
 
     /**
-     * addToDailyIntake(
-     *   foodName: String,
-     *   totalCalories: Double
-     * )
-     *
-     * If you want to store the user’s consumption in your local DB,
-     * call “repository.insertConsumedFood(...)” here, passing the needed info.
+     * Add consumed food to daily intake.
      */
     fun addToDailyIntake(foodName: String, totalCalories: Double) {
         viewModelScope.launch {
-            // If you have an entity like “ConsumedFood”
-            // or some method in your repository:
             repository.insertConsumedFood(
-                // Adjust to your actual data class
-                com.example.myapplication.data.local.ConsumedFood(
+                ConsumedFood(
                     foodName = foodName,
-                    calories = totalCalories,
+                    calories = totalCalories.toFloat(),
                     timestamp = System.currentTimeMillis()
                 )
             )

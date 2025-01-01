@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
 }
 
 android {
@@ -69,6 +70,8 @@ dependencies {
 
     // --- Room ---
     implementation(libs.room.runtime)
+    kapt(libs.room.compiler) // Add this line
+    implementation("androidx.room:room-ktx:2.5.1") // Kotlin extensions for Room
     // (Optional) If you want to manually parse JSON with Gson (outside Retrofit)
     implementation(libs.gson)
 }

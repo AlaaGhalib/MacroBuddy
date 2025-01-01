@@ -11,11 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.myapplication.ui.HomeViewModel
 
 @Composable
 fun HomeScreen(
     onNavigateToSearch: () -> Unit,
-    onNavigateToProfile: () -> Unit // New parameter
+    onNavigateToProfile: () -> Unit, // New parameter
+    viewModel: HomeViewModel
 ) {
     // Hardcoded calorie numbers for demonstration
     val consumed = 1200f

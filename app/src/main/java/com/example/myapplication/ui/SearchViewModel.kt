@@ -1,16 +1,18 @@
 package com.example.myapplication.ui
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.MyApplication
 import com.example.myapplication.data.NutritionRepository
 import com.example.myapplication.network.FoodItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class SearchViewModel(
-    private val repository: NutritionRepository
-) : ViewModel() {
+class SearchViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: NutritionRepository = (application as MyApplication).repository
 
     // Holds the list of foods returned by the search
     private val _searchResults = MutableStateFlow<List<FoodItem>>(emptyList())
