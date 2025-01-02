@@ -41,6 +41,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         return dailyGoal - (todaysCalorieSum.value ?: 0f)
     }
 
+    fun removeFood(food: ConsumedFood) {
+        viewModelScope.launch {
+            repository.deleteConsumedFood(food) // Deletes the food from the database
+            refreshData() // Refresh the list and calorie sum after deletion
+        }
+    }
+
     private fun getTodayStartEndTimestamps(): Pair<Long, Long> {
         val cal = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
