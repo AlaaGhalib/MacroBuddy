@@ -20,6 +20,7 @@ import com.example.myapplication.ui.FoodDetailViewModel
 import com.example.myapplication.ui.HomeViewModel
 import com.example.myapplication.ui.ProfileViewModel
 import com.example.myapplication.ui.SearchViewModel
+import com.example.myapplication.ui.screens.BarcodeScannerScreen
 import com.example.myapplication.ui.screens.FoodDetailScreen
 import com.example.myapplication.ui.screens.HomeScreen
 import com.example.myapplication.ui.screens.ProfileScreen
@@ -65,7 +66,6 @@ class MainActivity : ComponentActivity() {
 
                         // Destination 2: "search"
                         composable("search") {
-                            // Obtain SearchViewModel via viewModel()
                             val searchViewModel: SearchViewModel = viewModel()
 
                             SearchScreen(
@@ -73,9 +73,11 @@ class MainActivity : ComponentActivity() {
                                 viewModel = searchViewModel,
                                 onFoodSelected = { foodName ->
                                     navController.navigate("foodDetail/$foodName")
-                                }
+                                },
+                                navController = navController // Pass the NavController here
                             )
                         }
+
 
                         // Destination 3: "foodDetail/{foodName}"
                         composable(
@@ -108,6 +110,14 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
+                        composable("barcodeScanner") {
+                            BarcodeScannerScreen(
+                                onBarcodeDetected = { barcode ->
+                                    navController.navigate("foodDetail/$barcode")
+                                }
+                            )
+                        }
+
                     }
                 }
             }

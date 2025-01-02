@@ -26,10 +26,14 @@ class FoodDetailViewModel(application: Application) : AndroidViewModel(applicati
     /**
      * Fetch food details based on the food name.
      */
-    fun fetchFoodDetails(foodName: String) {
+    fun fetchFoodDetails(foodNameOrBarcode: String) {
         viewModelScope.launch {
             try {
-                val response = repository.getNutrientsForFood(foodName)
+                val response = if (foodNameOrBarcode.matches(Regex("\\d+"))) {
+                    repository.getProductByBarcode(foodNameOrBarcode)
+                } else {
+                    repository.getNutrientsForFood(foodNameOrBarcode)
+                }
                 _foodDetails.value = response.foods.orEmpty()
                 _errorMessage.value = ""
             } catch (e: Exception) {
@@ -37,6 +41,7 @@ class FoodDetailViewModel(application: Application) : AndroidViewModel(applicati
             }
         }
     }
+
 
     /**
      * Compute calories based on user input grams.
@@ -65,4 +70,16 @@ class FoodDetailViewModel(application: Application) : AndroidViewModel(applicati
             )
         }
     }
+    fun fetchFoodDetailsByBarcode(barcode: String) {
+        viewModelScope.launch {
+            try {
+                val response = repository.getNutrientsForBarcode(barcode)
+                _foodDetails.value = response.foods.orEmpty()
+                _errorMessage.value = ""
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "Error fetching details"
+            }
+        }
+    }
+
 }

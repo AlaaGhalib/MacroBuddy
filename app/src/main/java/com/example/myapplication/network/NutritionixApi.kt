@@ -36,5 +36,20 @@ interface NutritionixApi {
         @Header("x-app-key") apiKey: String,
         @Body request: NaturalNutrientsRequest
     ): NaturalNutrientsResponse
+
+    @GET("v1_1/item")
+    suspend fun getProductByBarcode(
+        @Query("upc") upc: String,
+        @Query("appId") appId: String,
+        @Query("appKey") apiKey: String
+    ): NaturalNutrientsResponse
+
+    @GET("v1_1/item")
+    suspend fun searchFoodsByBarcode(
+        @Query("upc") barcode: String,
+        @Query("appId") appId: String,
+        @Query("appKey") apiKey: String
+    ): NaturalNutrientsResponse
+
 }
 

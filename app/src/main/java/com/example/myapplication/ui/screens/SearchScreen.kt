@@ -11,14 +11,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.myapplication.network.FoodItem
 import com.example.myapplication.ui.SearchViewModel
-
 @Composable
 fun SearchScreen(
     onBackClick: () -> Unit,
     onFoodSelected: (String) -> Unit, // callback to navigate to detail
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
+    navController: NavController // Pass NavController here
 ) {
     var query by remember { mutableStateOf("") }
     val results by viewModel.searchResults.collectAsState()
@@ -48,6 +49,12 @@ fun SearchScreen(
             modifier = Modifier.padding(top = 8.dp)
         ) {
             Text("Search")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("barcodeScanner") }) {
+            Text("Scan Barcode")
         }
 
         // Show error if any

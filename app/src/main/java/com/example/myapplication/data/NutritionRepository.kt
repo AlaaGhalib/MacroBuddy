@@ -47,4 +47,20 @@ class NutritionRepository(
         val request = com.example.myapplication.network.NaturalNutrientsRequest(query = foodName)
         return api.getNutrients(appId, apiKey, request)
     }
+
+    suspend fun getProductByBarcode(barcode: String): NaturalNutrientsResponse {
+        return api.getProductByBarcode(
+            appId = appId,
+            apiKey = apiKey,
+            upc = barcode
+        )
+    }
+    suspend fun getNutrientsForBarcode(barcode: String): NaturalNutrientsResponse {
+        return api.searchFoodsByBarcode(
+            barcode = barcode,
+            appId = appId,
+            apiKey = apiKey
+        )
+    }
+
 }
