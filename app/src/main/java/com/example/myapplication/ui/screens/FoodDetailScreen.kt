@@ -8,10 +8,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.FoodDetailViewModel
+import com.example.myapplication.ui.HomeViewModel
 
 @Composable
 fun FoodDetailScreen(
     foodName: String,
+    onNavigateToHome: () -> Unit,
+    homeViewModel: HomeViewModel,
     viewModel: FoodDetailViewModel,
     onBackClick: () -> Unit
 ) {
@@ -71,8 +74,25 @@ fun FoodDetailScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Text("Total Calories for $gramsInput g = ${String.format("%.2f", totalCals)} kcal")
 
-            // If you want to add to daily intake with the user’s chosen grams + cals
-            // ...
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(onClick = {
+                if (item != null) {
+                    val inputGrams = gramsInput.toDoubleOrNull() ?: 0.0
+                    val totalCalories = viewModel.computeCaloriesForGramInput(item, inputGrams)
+                    viewModel.addToDailyIntake(item.food_name ?: "Unknown", totalCalories)
+
+                    // Notify HomeViewModel to refresh data
+                    homeViewModel.refreshData()
+
+                    // Redirect to SearchScreen
+                    onNavigateToHome()
+                }
+            }) {
+                Text("Add to Daily Intake")
+            }
+
+
         }
     }
 }

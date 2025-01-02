@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.navigation.common.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -74,4 +75,5 @@ dependencies {
     implementation("androidx.room:room-ktx:2.5.1") // Kotlin extensions for Room
     // (Optional) If you want to manually parse JSON with Gson (outside Retrofit)
     implementation(libs.gson)
+    
 }

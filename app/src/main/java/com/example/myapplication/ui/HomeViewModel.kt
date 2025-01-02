@@ -4,6 +4,7 @@ package com.example.myapplication.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.MyApplication
 import com.example.myapplication.data.NutritionRepository
@@ -16,42 +17,28 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val dailyGoal = 2000f // Example daily goal
 
-    // Initialize timestamps without destructuring
     private val todayTimestamps = getTodayStartEndTimestamps()
-    private val startOfDay: Long = todayTimestamps.first
-    private val endOfDay: Long = todayTimestamps.second
+    private val startOfDay = todayTimestamps.first
+    private val endOfDay = todayTimestamps.second
 
-    // LiveData for today's consumed foods
-    var todaysFoods: List<ConsumedFood> = emptyList()
+    val todaysFoods = MutableLiveData<List<ConsumedFood>>(emptyList())
+    val todaysCalorieSum = MutableLiveData<Float>(0f)
 
-
-    // LiveData for today's calorie sum
-    var todaysCalorieSum: Float? = 0f
-
-    fun setVar() {
-        viewModelScope.launch {
-            todaysFoods = repository.getConsumedFoodsForDay(startOfDay, endOfDay)
-            todaysCalorieSum = repository.getDailyCaloriesSum(startOfDay, endOfDay)
-        }
-    }
-    fun getRemainingCalories(caloriesConsumed: Float?): Float {
-        val consumed = caloriesConsumed ?: 0f
-        return dailyGoal - consumed
+    init {
+        refreshData()
     }
 
-    fun searchAndAddFood(query: String) {
+    fun refreshData() {
         viewModelScope.launch {
-            val response = repository.searchFoodItem(query)
-            val firstFood = response.common?.firstOrNull()
-            if (firstFood != null) {
-                val newFood = ConsumedFood(
-                    foodName = firstFood.food_name ?: "Unknown",
-                    calories = firstFood.nf_calories?.toFloat() ?: 0f,
-                    timestamp = System.currentTimeMillis()
-                )
-                repository.insertConsumedFood(newFood)
-            }
+            val foods = repository.getConsumedFoodsForDay(startOfDay, endOfDay)
+            val calorieSum = repository.getDailyCaloriesSum(startOfDay, endOfDay) ?: 0f
+            todaysFoods.postValue(foods)
+            todaysCalorieSum.postValue(calorieSum)
         }
+    }
+
+    fun getRemainingCalories(): Float {
+        return dailyGoal - (todaysCalorieSum.value ?: 0f)
     }
 
     private fun getTodayStartEndTimestamps(): Pair<Long, Long> {
@@ -67,3 +54,4 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         return Pair(start, end)
     }
 }
+

@@ -85,20 +85,18 @@ class MainActivity : ComponentActivity() {
                             val encodedFoodName = backStackEntry.arguments?.getString("foodName") ?: ""
                             val foodName = Uri.decode(encodedFoodName)
 
-                            // Obtain FoodDetailViewModel via viewModel()
                             val detailViewModel: FoodDetailViewModel = viewModel()
-
-                            // Fetch food details when the composable is launched
-                            LaunchedEffect(key1 = foodName) {
-                                detailViewModel.fetchFoodDetails(foodName)
-                            }
+                            val homeViewModel: HomeViewModel = viewModel()
 
                             FoodDetailScreen(
                                 foodName = foodName,
                                 viewModel = detailViewModel,
-                                onBackClick = { navController.popBackStack() }
+                                homeViewModel = homeViewModel,
+                                onBackClick = { navController.popBackStack() },
+                                onNavigateToHome = { navController.navigate("home") }
                             )
                         }
+
 
                         // Destination 4: "profile"
                         composable("profile") {
