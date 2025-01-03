@@ -21,7 +21,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         fetchDailyProgress()
     }
 
-    private fun fetchDailyProgress() {
+    fun fetchDailyProgress() {
         viewModelScope.launch {
             _dailyProgress.value = repository.getDailyProgress()
         }

@@ -43,12 +43,6 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
             onValueChange = { calorieInput = it },
             label = { Text("Enter today's calories") }
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        TextField(
-            value = weightInput,
-            onValueChange = { weightInput = it },
-            label = { Text("Enter today's weight (optional)") }
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {

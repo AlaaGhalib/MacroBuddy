@@ -10,12 +10,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.example.myapplication.ui.FoodDetailViewModel
 import com.example.myapplication.ui.HomeViewModel
 import com.example.myapplication.ui.ProfileViewModel
@@ -26,11 +34,16 @@ import com.example.myapplication.ui.screens.HomeScreen
 import com.example.myapplication.ui.screens.ProfileScreen
 import com.example.myapplication.ui.screens.SearchScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.workers.CaloriesWorker
+import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setupCalorieWorker()
 
         setContent {
             MyApplicationTheme {
@@ -124,4 +137,48 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun setupCalorieWorker() {
+        val workRequest = PeriodicWorkRequestBuilder<CaloriesWorker>(1, TimeUnit.DAYS)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .setRequiresBatteryNotLow(true)
+                    .build()
+            )
+            .setInitialDelay(calculateInitialDelay(), TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "DailyCalorieWorker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+
+        // Observe worker results and update UI if needed
+        WorkManager.getInstance(this)
+            .getWorkInfosForUniqueWorkLiveData("DailyCalorieWorker")
+            .observe(this) { workInfos ->
+                val workInfo = workInfos?.firstOrNull()
+                if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
+                    lifecycleScope.launch {
+                        // Notify ViewModel to refresh UI (e.g., update the graph)
+                        val profileViewModel =
+                            ViewModelProvider(this@MainActivity)[ProfileViewModel::class.java]
+                        profileViewModel.fetchDailyProgress()
+                    }
+                }
+            }
+    }
+
+    private fun calculateInitialDelay(): Long {
+        val now = System.currentTimeMillis()
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis - now
+    }
 }
+
