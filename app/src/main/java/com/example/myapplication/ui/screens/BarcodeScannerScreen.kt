@@ -1,101 +1,88 @@
 package com.example.myapplication.ui.screens
 
+import android.util.Size
 import androidx.annotation.OptIn
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.example.myapplication.ui.HomeViewModel
-import com.google.mlkit.vision.barcode.BarcodeScanner
+import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @Composable
 fun BarcodeScannerScreen(
-    onBarcodeDetected: (String) -> Unit
+    onBarcodeDetected: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = LocalContext.current as LifecycleOwner
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    var hasScanned by remember { mutableStateOf(false) }
+    val scanner = BarcodeScanning.getClient()
+    val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    var previewView: PreviewView? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(cameraProviderFuture) {
+        val cameraProvider = cameraProviderFuture.get()
+        val preview = Preview.Builder().build()
+        val imageAnalyzer = ImageAnalysis.Builder()
+            .setTargetResolution(Size(1280, 720))
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+
+        imageAnalyzer.setAnalyzer(cameraExecutor) { imageProxy ->
+            processImageProxy(scanner, imageProxy, onBarcodeDetected)
+        }
+
+        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+        try {
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                cameraSelector,
+                preview,
+                imageAnalyzer
+            )
+
+            previewView?.let {
+                preview.setSurfaceProvider(it.surfaceProvider)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
-            factory = { ctx ->
-                val previewView = PreviewView(ctx)
-                val cameraProvider = cameraProviderFuture.get()
-                val preview = Preview.Builder().build()
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                // Set up Barcode Scanner
-                val barcodeScanner = BarcodeScanning.getClient()
-                val imageAnalyzer = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                    .also { analyzer ->
-                        analyzer.setAnalyzer(ContextCompat.getMainExecutor(ctx)) { imageProxy ->
-                            processImageProxy(barcodeScanner, imageProxy) { barcode ->
-                                if (!hasScanned) {
-                                    hasScanned = true
-                                    onBarcodeDetected(barcode)
-                                }
-                            }
-                        }
-                    }
-
-                val camera = cameraProvider.bindToLifecycle(
-                    lifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageAnalyzer
-                )
-
-                preview.setSurfaceProvider(previewView.surfaceProvider)
-                previewView
+            factory = { context ->
+                PreviewView(context).apply {
+                    layoutParams = android.view.ViewGroup.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    previewView = this
+                }
             },
             modifier = Modifier.fillMaxSize()
         )
-
-        // Back Button
-        /*Button(
-            onClick = onBackClick,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
-        ) {
-            Text("Back")
-        }*/
     }
 }
-@androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+
+@OptIn(androidx.camera.core.ExperimentalGetImage::class)
 private fun processImageProxy(
-    scanner: BarcodeScanner,
+    scanner: com.google.mlkit.vision.barcode.BarcodeScanner,
     imageProxy: ImageProxy,
     onBarcodeDetected: (String) -> Unit
 ) {
@@ -104,17 +91,16 @@ private fun processImageProxy(
         val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
         scanner.process(image)
             .addOnSuccessListener { barcodes ->
-                for (barcode in barcodes) {
-                    barcode.rawValue?.let { onBarcodeDetected(it) }
+                barcodes.find { it.rawValue != null }?.rawValue?.let { rawValue ->
+                    onBarcodeDetected(rawValue)
                 }
             }
             .addOnFailureListener {
-                // Handle any errors here
+                it.printStackTrace()
             }
             .addOnCompleteListener {
                 imageProxy.close()
             }
-    } else {
-        imageProxy.close()
     }
 }
+
