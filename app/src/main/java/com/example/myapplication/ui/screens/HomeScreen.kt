@@ -84,7 +84,7 @@ fun FoodListItem(food: ConsumedFood, onRemoveClick: () -> Unit) {
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Text(text = food.foodName)
+        Text(text = food.foodName + "  " + food.calories + " Cal")
         Button(onClick = onRemoveClick) {
             Text("Remove")
         }
