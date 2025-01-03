@@ -60,7 +60,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
     // --- Retrofit & Gson ---
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)  // if you want auto-conversion to/from JSON
@@ -97,4 +96,7 @@ dependencies {
     // Optional: For better coroutine support with CameraX
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    //background functions
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
 }

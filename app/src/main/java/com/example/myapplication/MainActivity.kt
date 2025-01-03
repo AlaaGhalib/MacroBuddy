@@ -30,6 +30,8 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         setContent {
             MyApplicationTheme {
                 // Provide a top-level Scaffold
@@ -107,7 +109,6 @@ class MainActivity : ComponentActivity() {
 
                             ProfileScreen(
                                 viewModel = profileViewModel,
-                                onBackClick = { navController.popBackStack() }
                             )
                         }
                         composable("barcodeScanner") {
