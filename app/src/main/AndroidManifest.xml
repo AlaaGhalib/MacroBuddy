@@ -31,9 +31,8 @@
             </intent-filter>
         </activity>
         <meta-data
-            android:name="androidx.camera.lifecycle.ProcessCameraProvider"
+            android:name="androidx.camera.default.impl"
             android:value="androidx.camera.camera2.Camera2Config" />
-
     </application>
 
 </manifest>

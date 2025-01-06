@@ -81,7 +81,6 @@ dependencies {
     implementation(libs.retrofit.gson) // JSON parsing
 
     //camera ML kit barcode scanning
-
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     implementation("androidx.camera:camera-core:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")

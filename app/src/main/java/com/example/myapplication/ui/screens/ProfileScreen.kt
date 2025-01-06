@@ -37,11 +37,10 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
         TextField(
-            value = calorieInput,
-            onValueChange = { calorieInput = it },
-            label = { Text("Enter today's calories") }
+            value = weightInput,
+            onValueChange = { weightInput = it },
+            label = { Text("Enter today's weight") }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
